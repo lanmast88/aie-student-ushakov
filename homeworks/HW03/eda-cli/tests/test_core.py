@@ -51,14 +51,15 @@ def test_missing_table_and_quality_flags():
 def test_correlation_and_top_categories():
     df = _sample_df()
     corr = correlation_matrix(df)
-    # корреляция между age и height существует
-    assert "age" in corr.columns or corr.empty is False
+    # проверяем, что корреляция существует или DataFrame не пустой
+    assert "age" in corr.columns or not corr.empty
 
     top_cats = top_categories(df, max_columns=5, top_k=2)
     assert "city" in top_cats
     city_table = top_cats["city"]
     assert "value" in city_table.columns
     assert len(city_table) <= 2
+
 
 def test_quality_flags_on_sample_df():
     df = _sample_df()
@@ -70,3 +71,26 @@ def test_quality_flags_on_sample_df():
     assert "age" in missing_df.index
     assert missing_df.loc["age", "missing_count"] == 1
 
+
+def test_quality_flags_constant_and_high_cardinality():
+    df = pd.DataFrame(
+        {
+            "const_col": [1, 1, 1, 1],
+            "cat_col": [f"val_{i}" for i in range(150)],
+            "num": range(150),
+        }
+    )
+
+    summary = summarize_dataset(df)
+    missing_df = missing_table(df)
+    flags = compute_quality_flags(summary, missing_df, df)
+
+    # Проверка constant columns
+    assert "has_constant_columns" in flags
+    assert flags["has_constant_columns"] is True
+    assert flags["constant_columns"] == ["const_col"]
+
+    # Проверка high-cardinality categoricals
+    assert "has_high_cardinality_categoricals" in flags
+    assert flags["has_high_cardinality_categoricals"] is True
+    assert flags["high_cardinality_columns"] == ["cat_col"]

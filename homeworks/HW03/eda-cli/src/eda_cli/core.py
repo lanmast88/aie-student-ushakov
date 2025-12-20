@@ -70,10 +70,7 @@ def summarize_dataset(
         )
 
         is_numeric = bool(ptypes.is_numeric_dtype(s))
-        min_val: Optional[float] = None
-        max_val: Optional[float] = None
-        mean_val: Optional[float] = None
-        std_val: Optional[float] = None
+        min_val = max_val = mean_val = std_val = None
 
         if is_numeric and non_null > 0:
             min_val = float(s.min())
@@ -83,7 +80,11 @@ def summarize_dataset(
 
         if unique <= 1:
             constant_cols.append(name)
-        if (ptypes.is_object_dtype(s) or isinstance(s.dtype, pd.CategoricalDtype)) and unique > high_card_threshold:
+
+        if (
+            (ptypes.is_object_dtype(s) or isinstance(s.dtype, pd.CategoricalDtype))
+            and unique > high_card_threshold
+        ):
             high_card_cols.append(name)
 
         columns.append(
@@ -115,11 +116,13 @@ def summarize_dataset(
 def missing_table(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame(columns=["missing_count", "missing_share"])
+
     total = df.isna().sum()
     share = total / len(df)
-    return pd.DataFrame(
-        {"missing_count": total, "missing_share": share}
-    ).sort_values("missing_share", ascending=False)
+    return (
+        pd.DataFrame({"missing_count": total, "missing_share": share})
+        .sort_values("missing_share", ascending=False)
+    )
 
 
 def correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
@@ -135,68 +138,89 @@ def top_categories(
     top_k: int = 5,
 ) -> Dict[str, pd.DataFrame]:
     result: Dict[str, pd.DataFrame] = {}
-    candidate_cols: List[str] = []
 
-    for name in df.columns:
-        s = df[name]
-        if ptypes.is_object_dtype(s) or isinstance(s.dtype, pd.CategoricalDtype):
-            candidate_cols.append(name)
+    cat_cols = [
+        col
+        for col in df.columns
+        if ptypes.is_object_dtype(df[col])
+        or isinstance(df[col].dtype, pd.CategoricalDtype)
+    ]
 
-    for name in candidate_cols[:max_columns]:
-        s = df[name]
-        vc = s.value_counts(dropna=True).head(top_k)
+    for name in cat_cols[:max_columns]:
+        vc = df[name].value_counts(dropna=True).head(top_k)
         if vc.empty:
             continue
+
         share = vc / vc.sum()
-        table = pd.DataFrame(
-            {"value": vc.index.astype(str), "count": vc.values, "share": share.values}
+        result[name] = pd.DataFrame(
+            {
+                "value": vc.index.astype(str),
+                "count": vc.values,
+                "share": share.values,
+            }
         )
-        result[name] = table
 
     return result
 
 
-def compute_quality_flags(summary: DatasetSummary, missing_df: pd.DataFrame, df: pd.DataFrame) -> Dict[str, Any]:
+def compute_quality_flags(
+    summary: DatasetSummary,
+    missing_df: pd.DataFrame,
+    df: pd.DataFrame,
+) -> Dict[str, Any]:
     flags: Dict[str, Any] = {}
+
+    # --- базовые эвристики ---
     flags["too_few_rows"] = summary.n_rows < 100
     flags["too_many_columns"] = summary.n_cols > 100
 
-    max_missing_share = float(missing_df["missing_share"].max()) if not missing_df.empty else 0.0
+    max_missing_share = (
+        float(missing_df["missing_share"].max())
+        if not missing_df.empty
+        else 0.0
+    )
     flags["max_missing_share"] = max_missing_share
     flags["too_many_missing"] = max_missing_share > 0.5
 
-    const_cols = [col for col in df.columns if df[col].nunique(dropna=False) <= 1]
-    flags["has_constant_columns"] = len(const_cols) > 0
-    flags["constant_columns"] = const_cols
+    # --- constant columns ---
+    constant_columns = [
+        col for col in df.columns if df[col].nunique(dropna=False) <= 1
+    ]
+    flags["has_constant_columns"] = len(constant_columns) > 0
+    flags["constant_columns"] = constant_columns
 
-    high_card_cols = []
+    # --- high-cardinality categoricals ---
     high_card_threshold = 100
-    for col in df.select_dtypes(include=["object", "category"]).columns:
-        if df[col].nunique() > high_card_threshold:
-            high_card_cols.append(col)
+    high_cardinality_columns = [
+        col
+        for col in df.select_dtypes(include=["object", "category"]).columns
+        if df[col].nunique(dropna=True) > high_card_threshold
+    ]
+    flags["has_high_cardinality_categoricals"] = (
+        len(high_cardinality_columns) > 0
+    )
+    flags["high_cardinality_columns"] = high_cardinality_columns
 
-    flags["has_high_cardinality_categoricals"] = len(high_card_cols) > 0
-    flags["high_cardinality_columns"] = high_card_cols
-
+    # --- quality score ---
     score = 1.0
     score -= max_missing_share
-    if summary.n_rows < 100:
+
+    if flags["too_few_rows"]:
         score -= 0.2
-    if summary.n_cols > 100:
+    if flags["too_many_columns"]:
         score -= 0.1
-    if const_cols:
+    if flags["has_constant_columns"]:
         score -= 0.1
-    if high_card_cols:
+    if flags["has_high_cardinality_categoricals"]:
         score -= 0.1
 
-    score = max(0.0, min(1.0, score))
-    flags["quality_score"] = score
-
+    flags["quality_score"] = max(0.0, min(1.0, score))
     return flags
 
 
 def flatten_summary_for_print(summary: DatasetSummary) -> pd.DataFrame:
     rows: List[Dict[str, Any]] = []
+
     for col in summary.columns:
         rows.append(
             {
@@ -213,4 +237,5 @@ def flatten_summary_for_print(summary: DatasetSummary) -> pd.DataFrame:
                 "std": col.std,
             }
         )
+
     return pd.DataFrame(rows)
