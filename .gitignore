@@ -18,6 +18,7 @@ venv/
 env/
 ENV/
 .conda/
+.uv/
 .venv*/
 
 # Кеши Python и скомпилированные файлы
