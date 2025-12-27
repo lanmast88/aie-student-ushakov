@@ -78,6 +78,14 @@ class QualityResponse(BaseModel):
     )
 
 
+@app.get("/")
+def root():
+    """
+    Корневой эндпоинт.
+    Используется для быстрой проверки, что сервис запущен.
+    """
+    return {"message": "EDA API is running"}
+
 # ---------- Системный эндпоинт ----------
 
 

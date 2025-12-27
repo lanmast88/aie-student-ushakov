@@ -57,3 +57,21 @@ uv run eda-cli report data/example.csv --out-dir reports
 ```bash
 uv run pytest -q
 ```
+## HTTP API
+
+Проект также предоставляет HTTP API для оценки качества CSV-датасетов
+на базе FastAPI.
+
+### Запуск API-сервера
+
+Для запуска API используется `uvicorn`:
+
+```bash
+uv run uvicorn eda_cli.api:app --reload --port 8000
+```
+
+### Дополнительный эндпоинт
+
+POST /quality-from-csv — оценка качества по CSV-файлу с использованием EDA-ядра
+
+POST /quality-flags-from-csv — возвращает полный набор флагов качества из CSV с HW03 эвристиками
