@@ -1,0 +1,24 @@
+{
+  "experiment_id": "E4",
+  "dataset": "CIFAR10",
+  "seed": 42,
+  "model_cfg": {
+    "hidden_sizes": [
+      512,
+      256,
+      128
+    ],
+    "batchnorm": true,
+    "dropout_p": 0.0,
+    "seed": 42
+  },
+  "optimizer_cfg": {
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "weight_decay": 0.0
+  },
+  "early_stopping": {
+    "patience": 5,
+    "best_epoch": 5
+  }
+}
