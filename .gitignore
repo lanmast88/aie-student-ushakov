@@ -56,3 +56,5 @@ logs/
 *.tmp
 *.bak
 *.old
+homeworks/HW08-09/data/cifar-10-python.tar.gz
+*.tar.gz
