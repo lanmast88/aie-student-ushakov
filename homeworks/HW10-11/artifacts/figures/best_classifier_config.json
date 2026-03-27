@@ -1,0 +1,11 @@
+{
+  "experiment": "C4",
+  "description": "full Adam+Cosine",
+  "val_accuracy": 0.5195,
+  "architecture": "resnet18",
+  "dataset": "CIFAR100",
+  "num_classes": 100,
+  "seed": 42,
+  "batch_size": 512,
+  "epochs": 3
+}
