@@ -6,5 +6,19 @@
   "lr": 0.001,
   "best_val_accuracy": 100.0,
   "test_accuracy": 93.8125,
-  "model_type": "ResNet18"
+  "model_type": "ResNet18",
+  "preprocess": {
+    "resize": 64,
+    "normalize_mean": [0.5, 0.5, 0.5],
+    "normalize_std": [0.5, 0.5, 0.5]
+  },
+  "transforms": {
+    "train": ["Resize(64)", "ToTensor()", "Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])"],
+    "val": ["Resize(64)", "ToTensor()", "Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])"],
+    "test": ["Resize(64)", "ToTensor()", "Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])"]
+  },
+  "augmentation": {
+    "used": false,
+    "note": "C4 uses base transforms without augmentation; augmentation was applied only in C2"
+  }
 }

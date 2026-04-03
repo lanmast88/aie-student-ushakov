@@ -1,5 +1,7 @@
 """
-Загрузка датасета Goodreads-books с Kaggle.
+Загрузка датасета Goodbooks-10k с Kaggle.
+
+Файлы: books.csv, ratings.csv, book_tags.csv, tags.csv, to_read.csv
 
 Использование:
     python -m src.data.download
@@ -10,7 +12,7 @@ from pathlib import Path
 
 import kagglehub
 
-KAGGLE_DATASET = "jealousleopard/goodreadsbooks"
+KAGGLE_DATASET = "zygmuntz/goodbooks-10k"
 DEST_DIR = Path("data")
 
 
