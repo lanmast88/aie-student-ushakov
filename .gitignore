@@ -58,3 +58,8 @@ logs/
 *.old
 homeworks/HW08-09/data/cifar-10-python.tar.gz
 *.tar.gz
+
+# Чекпоинты и логи обучения (тяжёлые, не нужны в репо)
+homeworks/**/results/
+homeworks/**/logs/
+homeworks/**/__pycache__/

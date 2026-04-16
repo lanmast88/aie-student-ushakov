@@ -1,0 +1,32 @@
+# Tokenization Examples (distilbert-base-uncased, max_length=20)
+
+[1] Label=sadness
+Text: i didnt feel humiliated
+Tokens: ['i', 'didn', '##t', 'feel', 'humiliated']
+input_ids (first 10): [101, 1045, 2134, 2102, 2514, 26608, 102, 0, 0, 0]
+Real tokens: 7, PAD tokens: 13
+
+[2] Label=sadness
+Text: i can go from feeling so hopeless to so damned hopeful just from being around someone who cares and is awake
+Tokens: ['i', 'can', 'go', 'from', 'feeling', 'so', 'hopeless', 'to', 'so', 'damned', 'hopeful', 'just', 'from', 'being', 'around', 'someone', 'who', 'cares', 'and', 'is', 'awake']
+input_ids (first 10): [101, 1045, 2064, 2175, 2013, 3110, 2061, 20625, 2000, 2061]
+Real tokens: 20, PAD tokens: 0
+
+[3] Label=anger
+Text: im grabbing a minute to post i feel greedy wrong
+Tokens: ['im', 'grabbing', 'a', 'minute', 'to', 'post', 'i', 'feel', 'greedy', 'wrong']
+input_ids (first 10): [101, 10047, 9775, 1037, 3371, 2000, 2695, 1045, 2514, 20505]
+Real tokens: 12, PAD tokens: 8
+
+[4] Label=love
+Text: i am ever feeling nostalgic about the fireplace i will know that it is still on the property
+Tokens: ['i', 'am', 'ever', 'feeling', 'nos', '##tal', '##gic', 'about', 'the', 'fireplace', 'i', 'will', 'know', 'that', 'it', 'is', 'still', 'on', 'the', 'property']
+input_ids (first 10): [101, 1045, 2572, 2412, 3110, 16839, 9080, 12863, 2055, 1996]
+Real tokens: 20, PAD tokens: 0
+
+[5] Label=anger
+Text: i am feeling grouchy
+Tokens: ['i', 'am', 'feeling', 'gr', '##ou', '##chy']
+input_ids (first 10): [101, 1045, 2572, 3110, 24665, 7140, 11714, 102, 0, 0]
+Real tokens: 8, PAD tokens: 12
+
