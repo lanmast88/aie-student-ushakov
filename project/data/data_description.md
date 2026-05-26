@@ -1,45 +1,49 @@
-# Описание данных
+# Описание данных — Similar Tours Recommendation
 
-## Датасет: Goodbooks-10k
+## Датасет: tours.json
 
-- **Источник:** Kaggle — [zygmuntz/goodbooks-10k](https://www.kaggle.com/datasets/zygmunt/goodbooks-10k)
-- **Размер:** 10 000 книг, 53 424 пользователя, ~6 млн оценок
+- **Источник:** синтетические данные, сгенерированные скриптом `generate_tours.py`
+- **Размер:** 200 туров
+- **Реальных персональных данных нет** — соответствует правилам README
 
 ### Файлы
 
 | Файл | Описание |
 |---|---|
-| `books.csv` | Метаданные книг: название, автор, год, ISBN, рейтинг |
-| `ratings.csv` | Индивидуальные оценки: `user_id`, `book_id`, `rating` (1–5) |
-| `book_tags.csv` | Теги книг от пользователей: `goodreads_book_id`, `tag_id`, `count` |
-| `tags.csv` | Справочник тегов: `tag_id`, `tag_name` |
-| `to_read.csv` | Книги в списке "хочу прочитать": `user_id`, `book_id` |
+| `tours.json` | Синтетический датасет туров |
+| `generate_tours.py` | Скрипт генерации датасета |
+| `batch_utils.py` | Утилита разбивки и мёржа батчей |
 
-### Ключевые колонки ratings.csv
+### Структура одного тура
 
-| Колонка | Тип | Описание |
+| Поле | Тип | Описание |
 |---|---|---|
-| user_id | int | ID пользователя |
-| book_id | int | ID книги |
-| rating | int | Оценка от 1 до 5 |
+| id | string | UUID тура |
+| name | string | Название тура |
+| description | string | Текстовое описание (2–3 предложения) |
+| city_id | string | Идентификатор города |
+| city_name | string | Название города |
+| country | string | Страна |
+| hotel_id | string | Идентификатор отеля |
+| hotel_name | string | Название отеля |
+| hotel_stars | int | Звёздность отеля (2, 3, 4, 5, 7) |
+| price | float | Цена тура в евро |
+| duration_nights | int | Длительность в ночах |
+| meal_type | string | `all_inclusive` / `breakfast` / `none` |
+| start_date | string | Дата начала тура (YYYY-MM-DD) |
+| category | string | `luxury` / `comfort` / `budget` |
+| photo_url | string | URL фото (picsum.photos placeholder) |
+| status | string | `active` / `inactive` |
 
-### Ключевые колонки books.csv
-
-| Колонка | Тип | Описание |
-|---|---|---|
-| book_id | int | ID книги |
-| title | str | Название |
-| authors | str | Авторы |
-| average_rating | float | Средний рейтинг |
-| ratings_count | int | Число оценок |
-| original_publication_year | float | Год публикации |
-
-## Загрузка
+### Как воспроизвести датасет
 
 ```bash
-# Настройте Kaggle API:
-#   1. https://www.kaggle.com/settings → API → Create New Token
-#   2. mv kaggle.json ~/.kaggle/ && chmod 600 ~/.kaggle/kaggle.json
-
-python -m src.data.download
+python3 generate_tours.py --count 200 --seed 42 --output tours.json
 ```
+
+### Происхождение данных
+
+Синтетические данные сгенерированы скриптом с реалистичной бизнес-логикой:
+цены коррелируют с городом, отелем и сезоном.
+Описания написаны с помощью Claude (Anthropic).
+Фотографии — плейсхолдеры от picsum.photos.

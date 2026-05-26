@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+notebooks/
+data/
+artifacts/exp01/
+artifacts/exp02/
+configs/
+tests/
+*.ipynb

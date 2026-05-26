@@ -1,0 +1,5 @@
+{
+  "struct_weight": 0.7,
+  "text_weight": 0.3,
+  "top_k": 5
+}
