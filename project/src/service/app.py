@@ -1,53 +1,58 @@
 import json
 import logging
-import pickle
+import os
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from src.models.recommender import get_similar_tours
 
+_PROJECT_ROOT = Path(__file__).parents[2]
+_CONFIG_PATH = Path(os.getenv("CONFIG_PATH", _PROJECT_ROOT / "configs" / "config.yaml"))
+
+with _CONFIG_PATH.open() as _f:
+    _cfg = yaml.safe_load(_f)
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, _cfg["service"]["log_level"]),
     format="%(asctime)s  %(levelname)s  %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-ARTIFACTS_DIR = Path(__file__).parents[2] / "artifacts" / "exp03"
+_ARTIFACTS_DIR = _PROJECT_ROOT / _cfg["artifacts_dir"]
+_DEFAULT_TOP_K: int = _cfg["model"]["top_k"]
 
 app = FastAPI(title="Tour Recommender API", version="1.0.0")
 
-# Загружаем артефакты один раз при старте
 _tours_df: pd.DataFrame
 _sim_matrix: np.ndarray
-_top_k: int
 
 
 @app.on_event("startup")
 def load_artifacts() -> None:
-    global _tours_df, _sim_matrix, _top_k
+    global _tours_df, _sim_matrix
 
-    logger.info("Loading artifacts from %s", ARTIFACTS_DIR)
-    tours = json.loads((ARTIFACTS_DIR / "tours_active.json").read_text())
+    logger.info("Config: %s", _CONFIG_PATH)
+    logger.info("Loading artifacts from %s", _ARTIFACTS_DIR)
+    tours = json.loads((_ARTIFACTS_DIR / "tours_active.json").read_text())
     _tours_df = pd.DataFrame(tours)
-    _sim_matrix = np.load(ARTIFACTS_DIR / "sim_combined.npy")
-    cfg = json.loads((ARTIFACTS_DIR / "best_config.json").read_text())
-    _top_k = int(cfg.get("top_k", 5))
+    _sim_matrix = np.load(_ARTIFACTS_DIR / "sim_combined.npy")
     logger.info(
-        "Loaded %d tours, sim_matrix %s, top_k=%d",
+        "Loaded %d tours, sim_matrix %s, default top_k=%d",
         len(_tours_df),
         _sim_matrix.shape,
-        _top_k,
+        _DEFAULT_TOP_K,
     )
 
 
 class PredictRequest(BaseModel):
     tour_id: str
-    top_k: int = 5
+    top_k: int = _DEFAULT_TOP_K
 
 
 class TourRecommendation(BaseModel):
@@ -97,18 +102,11 @@ def predict(req: PredictRequest) -> PredictResponse:
     top_k = max(1, min(req.top_k, 20))
     recs_df = get_similar_tours(_tours_df, req.tour_id, _sim_matrix, top_k=top_k)
 
-    rec_ids = (
-        _tours_df[_tours_df["name"].isin(recs_df["name"])]["id"].values
-        if "id" not in recs_df.columns
-        else recs_df["id"].values
-    )
-
     recommendations = []
-    for i, row in recs_df.iterrows():
-        tour_row = _tours_df[_tours_df["name"] == row["name"]].iloc[0]
+    for _, row in recs_df.iterrows():
         recommendations.append(
             TourRecommendation(
-                id=tour_row["id"],
+                id=row["id"],
                 name=row["name"],
                 city_name=row["city_name"],
                 category=row["category"],

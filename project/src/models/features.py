@@ -4,14 +4,18 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-def build_feature_matrices(df: pd.DataFrame):
+def build_feature_matrices(
+    df: pd.DataFrame,
+    tfidf_max_features: int = 200,
+    tfidf_ngram_range: tuple = (1, 2),
+):
     """Строит struct_matrix и tfidf_matrix из датафрейма активных туров.
 
     df должен быть pre-filtered (только active, reset_index выполнен).
 
     Returns:
         struct_matrix: np.ndarray (n, 19)  — one-hot + нормированные числовые
-        tfidf_matrix:  np.ndarray (n, 200) — TF-IDF по описаниям
+        tfidf_matrix:  np.ndarray (n, F)   — TF-IDF по описаниям
         scaler:        fitted MinMaxScaler
         tfidf:         fitted TfidfVectorizer
     """
@@ -27,7 +31,7 @@ def build_feature_matrices(df: pd.DataFrame):
 
     struct_matrix = pd.concat([cat_features, num_features], axis=1).values
 
-    tfidf = TfidfVectorizer(max_features=200, ngram_range=(1, 2))
+    tfidf = TfidfVectorizer(max_features=tfidf_max_features, ngram_range=tfidf_ngram_range)
     tfidf_matrix = tfidf.fit_transform(df["description"]).toarray()
 
     return struct_matrix, tfidf_matrix, scaler, tfidf

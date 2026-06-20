@@ -1,0 +1,12 @@
+artifacts_dir: artifacts/exp03
+
+model:
+  struct_weight: 0.7
+  tfidf_weight: 0.3
+  top_k: 5
+  tfidf_max_features: 200
+  tfidf_ngram_range: [1, 2]
+
+service:
+  port: 8000
+  log_level: INFO

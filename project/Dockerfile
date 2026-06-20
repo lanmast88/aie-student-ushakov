@@ -6,6 +6,7 @@ COPY requirements-service.txt .
 RUN pip install --no-cache-dir -r requirements-service.txt
 
 COPY src/ ./src/
+COPY configs/ ./configs/
 COPY artifacts/exp03/ ./artifacts/exp03/
 
 EXPOSE 8000

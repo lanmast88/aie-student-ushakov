@@ -23,6 +23,6 @@ def get_similar_tours(
     idx     = df.index[df["id"] == tour_id][0]
     scores  = sim_matrix[idx]
     top_idx = np.argsort(scores)[::-1][1:top_k + 1]
-    result  = df.iloc[top_idx][["name", "city_name", "category", "hotel_stars", "meal_type", "price"]].copy()
+    result  = df.iloc[top_idx][["id", "name", "city_name", "category", "hotel_stars", "meal_type", "price"]].copy()
     result["similarity"] = scores[top_idx].round(3)
     return result.reset_index(drop=True)
